@@ -1,0 +1,504 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namespaces_poc_ingestao_sb0_name": {
+            "defaultValue": "poc-ingestao-sb0",
+            "type": "String"
+        },
+        "sb_location": {
+            "type": "string",
+            "defaultValue": "Brazil South"
+        },
+        "sb_sku": {
+            "type": "string",
+            "defaultValue": "Standard"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ServiceBus/namespaces",
+            "apiVersion": "2021-11-01",
+            "name": "[parameters('namespaces_poc_ingestao_sb0_name')]",
+            "location": "[parameters('sb_location')]",
+            "sku": "[parameters('sb_sku')]",
+            "properties": {
+                "disableLocalAuth": false,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/Poc.EventDriven.App.AksMonitorApi')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Manage",
+                    "Listen",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/AuthorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/RootManageSharedAccessKey')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen",
+                    "Manage",
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/networkRuleSets",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/default')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "publicNetworkAccess": "Enabled",
+                "defaultAction": "Allow",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "maxMessageSizeInKilobytes": 256,
+                "defaultMessageTimeToLive": "P30D",
+                "maxSizeInMegabytes": 1024,
+                "requiresDuplicateDetection": false,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "enableBatchedOperations": true,
+                "status": "Active",
+                "supportOrdering": true,
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": false,
+                "enableExpress": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "maxMessageSizeInKilobytes": 256,
+                "defaultMessageTimeToLive": "P30D",
+                "maxSizeInMegabytes": 1024,
+                "requiresDuplicateDetection": false,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "enableBatchedOperations": true,
+                "status": "Active",
+                "supportOrdering": true,
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": false,
+                "enableExpress": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/regime_calcular_saldo_tp')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "maxMessageSizeInKilobytes": 256,
+                "defaultMessageTimeToLive": "P30D",
+                "maxSizeInMegabytes": 1024,
+                "requiresDuplicateDetection": false,
+                "duplicateDetectionHistoryTimeWindow": "PT10M",
+                "enableBatchedOperations": true,
+                "status": "Active",
+                "supportOrdering": true,
+                "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+                "enablePartitioning": false,
+                "enableExpress": false
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/Poc.EventDriven.App.GeradorNf')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/Poc.EventDriven.App.NfExportacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/Poc.EventDriven.App.NfExportacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/Poc.EventDriven.App.NfImportacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/Poc.EventDriven.App.NfImportacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/Poc.EventDriven.App.NfMonitorWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/Poc.EventDriven.App.NfNacionalizacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Listen"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/authorizationRules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/Poc.EventDriven.App.NfNacionalizacaoWorker')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "rights": [
+                    "Send"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/regime_calcular_saldo_tp/calculador_saldo_worker_sub')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'regime_calcular_saldo_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT2M",
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P30D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": false,
+                "maxDeliveryCount": 1024,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/exportacao_worker_sub')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT2M",
+                "requiresSession": true,
+                "defaultMessageTimeToLive": "P14D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": true,
+                "maxDeliveryCount": 1024,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/importacao_worker_sub')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT2M",
+                "requiresSession": true,
+                "defaultMessageTimeToLive": "P30D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": false,
+                "maxDeliveryCount": 1024,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/monitor_worker_sub')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT2M",
+                "requiresSession": false,
+                "defaultMessageTimeToLive": "P30D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": true,
+                "maxDeliveryCount": 1024,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/nacionalizacao_worker_sub')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "isClientAffine": false,
+                "lockDuration": "PT2M",
+                "requiresSession": true,
+                "defaultMessageTimeToLive": "P30D",
+                "deadLetteringOnMessageExpiration": true,
+                "deadLetteringOnFilterEvaluationExceptions": true,
+                "maxDeliveryCount": 1024,
+                "status": "Active",
+                "enableBatchedOperations": true,
+                "autoDeleteOnIdle": "P10675198DT2H48M5.477S"
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_update_monitor_tp/monitor_worker_sub/$Default')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp', 'monitor_worker_sub')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "action": {},
+                "filterType": "SqlFilter",
+                "sqlFilter": {
+                    "sqlExpression": "1=1",
+                    "compatibilityLevel": 20
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/regime_calcular_saldo_tp/calculador_saldo_worker_sub/$Default')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('namespaces_poc_ingestao_sb0_name'), 'regime_calcular_saldo_tp', 'calculador_saldo_worker_sub')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'regime_calcular_saldo_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "action": {},
+                "filterType": "SqlFilter",
+                "sqlFilter": {
+                    "sqlExpression": "1=1",
+                    "compatibilityLevel": 20
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/exportacao_worker_sub/Ingress-Type')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'exportacao_worker_sub')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "action": {},
+                "filterType": "SqlFilter",
+                "sqlFilter": {
+                    "sqlExpression": "\\[Ingress-Type\\] = \"exportacao\"",
+                    "compatibilityLevel": 20
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/importacao_worker_sub/Ingress-Type')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'importacao_worker_sub')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "action": {},
+                "filterType": "SqlFilter",
+                "sqlFilter": {
+                    "sqlExpression": "\\[Ingress-Type\\] = \"importacao\"",
+                    "compatibilityLevel": 20
+                }
+            }
+        },
+        {
+            "type": "Microsoft.ServiceBus/namespaces/topics/subscriptions/rules",
+            "apiVersion": "2021-11-01",
+            "name": "[concat(parameters('namespaces_poc_ingestao_sb0_name'), '/nf_ingress_tp/nacionalizacao_worker_sub/Ingress-Type')]",
+            "location": "Brazil South",
+            "dependsOn": [
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics/subscriptions', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'nacionalizacao_worker_sub')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces/topics', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp')]",
+                "[resourceId('Microsoft.ServiceBus/namespaces', parameters('namespaces_poc_ingestao_sb0_name'))]"
+            ],
+            "properties": {
+                "action": {},
+                "filterType": "SqlFilter",
+                "sqlFilter": {
+                    "sqlExpression": "\\[Ingress-Type\\] = \"nacionalizacao\"",
+                    "compatibilityLevel": 20
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "Poc.EventDriven.App.AksMonitorApi.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'Poc.EventDriven.App.AksMonitorApi'))]"
+        },
+        "Poc.EventDriven.App.NfIngestorGrpcServer.nf_ingress_tp.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'Poc.EventDriven.App.GeradorNf'))]"
+        },
+        "Poc.EventDriven.App.NfExportacaoWorker.nf_ingress_tp.exportacao_worker_sub.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'Poc.EventDriven.App.NfExportacaoWorker'))]"
+        },
+        "Poc.EventDriven.App.NfExportacaoWorker.nf_update_monitor_tp.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp', 'Poc.EventDriven.App.NfExportacaoWorker'))]"
+        },
+        "Poc.EventDriven.App.NfImportacaoWorker.nf_ingress_tp.importacao_worker_sub.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'Poc.EventDriven.App.NfImportacaoWorker'))]"
+        },
+        "Poc.EventDriven.App.NfImportacaoWorker.nf_update_monitor_tp.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp', 'Poc.EventDriven.App.NfImportacaoWorker'))]"
+        },
+        "Poc.EventDriven.App.NfNacionalizacaoWorker.nf_ingress_tp.nacionalizacao_worker_sub.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_ingress_tp', 'Poc.EventDriven.App.NfNacionalizacaoWorker'))]"
+        },
+        "Poc.EventDriven.App.NfNacionalizacaoWorker.nf_update_monitor_tp.ConnectionString": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces/topics/authorizationRules', parameters('namespaces_poc_ingestao_sb0_name'), 'nf_update_monitor_tp', 'Poc.EventDriven.App.NfNacionalizacaoWorker'))]"
+        }
+    }
+}

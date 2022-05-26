@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: poc-event-driven-ns
+data:
+  POSTGRES_DB: regimes
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
