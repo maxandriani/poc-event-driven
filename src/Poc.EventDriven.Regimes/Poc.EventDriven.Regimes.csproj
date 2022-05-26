@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Poc.EventDriven</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="DwSaldo\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Poc.EventDriven.Common\Poc.EventDriven.Common.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.NfImportacaoWorker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

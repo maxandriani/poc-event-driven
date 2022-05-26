@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.NfExportacaoWorker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.NfMonitorWorker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

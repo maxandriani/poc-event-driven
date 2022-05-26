@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.NfNacionalizacaoWorker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

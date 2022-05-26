@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.CalculadoraSaldoWorker": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
