@@ -37,11 +37,11 @@ Estruturas de Tópicos necessárias.
 
 * **aks-monitor-api-dep:** Poc.EventDriven.App.AksMonitorApi
 * **calculador-saldo-worker-dep:** Poc.EventDriven.App.CalculadoraSaldoWorker
-* **nf-exportacao-worker-dep:** Poc.EventDriven.App.NfExportacaoWorker
-* **nf-importacao-worker-dep:** Poc.EventDriven.App.NfImportacaoWorker
+* **nf-exportacao-worker-dep:** Poc.EventDriven.App.DwNfConsolidacaoWorker
+* **nf-importacao-worker-dep:** Poc.EventDriven.App.DwNfConsolidacaoWorker
 * **nf-ingestor-grpc-svc:** Poc.EventDriven.App.NfIngestorGrpcServer
 * **nf-monitor-worker-dep:** Poc.EventDriven.App.NfMonitorWroker
-* **nf-nacionalizacao-worker-dep:** Poc.EventDriven.App.NfNacionalizacaoWorker
+* **nf-nacionalizacao-worker-dep:** Poc.EventDriven.App.DwNfConsolidacaoWorker
 * **regime-api:** Poc.EventDriven.App.RegimeApi
 * **regime-web:**  
 

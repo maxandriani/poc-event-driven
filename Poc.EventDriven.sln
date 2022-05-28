@@ -9,19 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.Calcula
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.GeradorNf", "src\Poc.EventDriven.App.GeradorNf\Poc.EventDriven.App.GeradorNf.csproj", "{94F5AC33-7E83-40A8-B62D-49EEA0EBB136}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfExportacaoWorker", "src\Poc.EventDriven.App.NfExportacaoWorker\Poc.EventDriven.App.NfExportacaoWorker.csproj", "{2B6A31E2-918A-462D-AE7B-46A702BAAB36}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfImportacaoWorker", "src\Poc.EventDriven.App.NfImportacaoWorker\Poc.EventDriven.App.NfImportacaoWorker.csproj", "{28353773-CF06-4F63-BC56-64AEA68BB201}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfMonitorWorker", "src\Poc.EventDriven.App.NfMonitorWorker\Poc.EventDriven.App.NfMonitorWorker.csproj", "{0E237762-3FF1-466B-9FE7-A43D6F637E45}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfNacionalizacaoWorker", "src\Poc.EventDriven.App.NfNacionalizacaoWorker\Poc.EventDriven.App.NfNacionalizacaoWorker.csproj", "{E4773686-B8FE-481F-A9B4-CB9B5AE2A061}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.RegimeApi", "src\Poc.EventDriven.App.RegimeApi\Poc.EventDriven.App.RegimeApi.csproj", "{610751B6-0AE2-4E69-942D-1DBF89819E7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.AksMonitorApi", "src\Poc.EventDriven.App.AksMonitorApi\Poc.EventDriven.App.AksMonitorApi.csproj", "{8A3FC61B-BA3D-41EB-9A81-A61EBB405AAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.AksMonitorApi", "src\Poc.EventDriven.App.AksMonitorApi\Poc.EventDriven.App.AksMonitorApi.csproj", "{8A3FC61B-BA3D-41EB-9A81-A61EBB405AAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.NfIngestorGrpcServer", "src\Poc.EventDriven.App.NfIngestorGrpcServer\Poc.EventDriven.App.NfIngestorGrpcServer.csproj", "{C34E2993-EC8A-4767-8636-ACD70B2D350A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfIngestorGrpcServer", "src\Poc.EventDriven.App.NfIngestorGrpcServer\Poc.EventDriven.App.NfIngestorGrpcServer.csproj", "{C34E2993-EC8A-4767-8636-ACD70B2D350A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.Common", "src\Poc.EventDriven.Common\Poc.EventDriven.Common.csproj", "{9A0F928A-FE49-438A-B656-0891ED6C73BE}"
 EndProject
@@ -31,7 +25,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.Dw", "src\P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.Regimes", "src\Poc.EventDriven.Regimes\Poc.EventDriven.Regimes.csproj", "{5FC2A91C-6AA7-4FAE-BED6-272AF4EC9F1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.EntityFramework", "src\Poc.EventDriven.EntityFramework\Poc.EventDriven.EntityFramework.csproj", "{14BAB89E-1226-488D-861B-FDF263E68FD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.EntityFramework", "src\Poc.EventDriven.EntityFramework\Poc.EventDriven.EntityFramework.csproj", "{14BAB89E-1226-488D-861B-FDF263E68FD4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{4FE52EF0-521F-428E-ACDC-2B1E174B8E0F}"
+	ProjectSection(SolutionItems) = preProject
+		docs\arquitetura.md = docs\arquitetura.md
+		docs\diagrama-nf.mdj = docs\diagrama-nf.mdj
+		docs\infra.md = docs\infra.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{39D8C0F9-86C0-4EE5-A8EF-39D94B2912AF}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.MessageBus", "src\Poc.EventDriven.MessageBus\Poc.EventDriven.MessageBus.csproj", "{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.DwNfConsolidacaoWorker", "src\Poc.EventDriven.App.DwNfConsolidacaoWorker\Poc.EventDriven.App.DwNfConsolidacaoWorker.csproj", "{793CF7B8-5ECA-4595-B389-08060CD5B03E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,22 +60,10 @@ Global
 		{94F5AC33-7E83-40A8-B62D-49EEA0EBB136}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94F5AC33-7E83-40A8-B62D-49EEA0EBB136}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94F5AC33-7E83-40A8-B62D-49EEA0EBB136}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2B6A31E2-918A-462D-AE7B-46A702BAAB36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B6A31E2-918A-462D-AE7B-46A702BAAB36}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B6A31E2-918A-462D-AE7B-46A702BAAB36}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B6A31E2-918A-462D-AE7B-46A702BAAB36}.Release|Any CPU.Build.0 = Release|Any CPU
-		{28353773-CF06-4F63-BC56-64AEA68BB201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28353773-CF06-4F63-BC56-64AEA68BB201}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28353773-CF06-4F63-BC56-64AEA68BB201}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28353773-CF06-4F63-BC56-64AEA68BB201}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E237762-3FF1-466B-9FE7-A43D6F637E45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E237762-3FF1-466B-9FE7-A43D6F637E45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E237762-3FF1-466B-9FE7-A43D6F637E45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E237762-3FF1-466B-9FE7-A43D6F637E45}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E4773686-B8FE-481F-A9B4-CB9B5AE2A061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4773686-B8FE-481F-A9B4-CB9B5AE2A061}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4773686-B8FE-481F-A9B4-CB9B5AE2A061}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4773686-B8FE-481F-A9B4-CB9B5AE2A061}.Release|Any CPU.Build.0 = Release|Any CPU
 		{610751B6-0AE2-4E69-942D-1DBF89819E7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{610751B6-0AE2-4E69-942D-1DBF89819E7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{610751B6-0AE2-4E69-942D-1DBF89819E7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -95,6 +96,14 @@ Global
 		{14BAB89E-1226-488D-861B-FDF263E68FD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14BAB89E-1226-488D-861B-FDF263E68FD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14BAB89E-1226-488D-861B-FDF263E68FD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{793CF7B8-5ECA-4595-B389-08060CD5B03E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{793CF7B8-5ECA-4595-B389-08060CD5B03E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{793CF7B8-5ECA-4595-B389-08060CD5B03E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{793CF7B8-5ECA-4595-B389-08060CD5B03E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -102,10 +111,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{46F9CA6D-B25E-4AC9-80F5-4E3D90D75C4A} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{94F5AC33-7E83-40A8-B62D-49EEA0EBB136} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
-		{2B6A31E2-918A-462D-AE7B-46A702BAAB36} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
-		{28353773-CF06-4F63-BC56-64AEA68BB201} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{0E237762-3FF1-466B-9FE7-A43D6F637E45} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
-		{E4773686-B8FE-481F-A9B4-CB9B5AE2A061} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{610751B6-0AE2-4E69-942D-1DBF89819E7C} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{8A3FC61B-BA3D-41EB-9A81-A61EBB405AAC} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{C34E2993-EC8A-4767-8636-ACD70B2D350A} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
@@ -114,6 +120,8 @@ Global
 		{5A0434B8-101D-45F4-AEE5-2FA0D1977B4E} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{5FC2A91C-6AA7-4FAE-BED6-272AF4EC9F1E} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{14BAB89E-1226-488D-861B-FDF263E68FD4} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
+		{1FBBC05D-1B89-415F-98F8-5F5342EB56BC} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
+		{793CF7B8-5ECA-4595-B389-08060CD5B03E} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F3C0F8A8-7C09-49CD-BFA2-E6C3630CAC38}

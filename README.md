@@ -24,3 +24,13 @@ az deployment group create -g=poc-event-driven-rg --template-file=infra/az/servi
 # Apply AKS Infra
 
 ```
+
+## Migrations
+
+```sh
+## Regismes DB
+dotnet ef database update -p src/Poc.EventDriven.App.RegimeApi/Poc.EventDriven.App.RegimeApi.csproj
+
+## DwNf DB
+
+```
