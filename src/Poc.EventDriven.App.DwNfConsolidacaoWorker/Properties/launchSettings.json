@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Poc.EventDriven.App.DwNfConsolidacaoWorker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Docker (1)": {
+      "commandName": "Docker"
+    }
+  }
+}

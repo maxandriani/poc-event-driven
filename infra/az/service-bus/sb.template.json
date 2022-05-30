@@ -423,7 +423,7 @@
                 "action": {},
                 "filterType": "SqlFilter",
                 "sqlFilter": {
-                    "sqlExpression": "\\[Ingress-Type\\] = \"exportacao\"",
+                    "sqlExpression": "\\[Ingress-Type\\] = 'exportacao'",
                     "compatibilityLevel": 20
                 }
             }
@@ -442,7 +442,7 @@
                 "action": {},
                 "filterType": "SqlFilter",
                 "sqlFilter": {
-                    "sqlExpression": "\\[Ingress-Type\\] = \"importacao\"",
+                    "sqlExpression": "\\[Ingress-Type\\] = 'importacao'",
                     "compatibilityLevel": 20
                 }
             }
@@ -461,7 +461,7 @@
                 "action": {},
                 "filterType": "SqlFilter",
                 "sqlFilter": {
-                    "sqlExpression": "\\[Ingress-Type\\] = \"nacionalizacao\"",
+                    "sqlExpression": "\\[Ingress-Type\\] = 'nacionalizacao'",
                     "compatibilityLevel": 20
                 }
             }

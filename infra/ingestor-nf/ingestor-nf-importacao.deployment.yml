@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ing-nf-imp-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingestor-nf-importacao-worker
+  template:
+    metadata:
+      labels:
+        app: ingestor-nf-importacao-worker
+    spec:
+      containers:
+      - name: ingestor-nf-importacao-worker
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.0
+        envFrom:
+          - configMapRef:
+              name: ingestor-nf-importacao-config
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+          name: ing-nf-im-p

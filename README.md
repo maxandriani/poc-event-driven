@@ -6,6 +6,8 @@ Apresentação de conceitos básicos de orientação a eventos para stakeholders
 
 ```sh
 docker buildx build -t maxandriani/poc.eventdriven.app.regimeapi:1.0.0 -f ./src/Poc.EventDriven.App.RegimeApi/Dockerfile --platform linux/amd64,linux/arm64 --push .
+
+docker buildx build -t maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.0 -f ./src/Poc.EventDriven.App.DwNfConsolidacaoWorker/Dockerfile --platform linux/amd64,linux/arm64 --push .
 ```
 
 ## Deploy Infra
@@ -30,6 +32,8 @@ az deployment group create -g=poc-event-driven-rg --template-file=infra/az/servi
 ```sh
 ## Regismes DB
 dotnet ef database update -p src/Poc.EventDriven.App.RegimeApi/Poc.EventDriven.App.RegimeApi.csproj
+
+dotnet ef database update -p src/Poc.EventDriven.App.DwNfConsolidadorWorker/Poc.EventDriven.App.DwNfConsolidadorWorker.csproj
 
 ## DwNf DB
 

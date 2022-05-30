@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ing-nf-exp-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingestor-nf-exportacao-worker
+  template:
+    metadata:
+      labels:
+        app: ingestor-nf-exportacao-worker
+    spec:
+      containers:
+      - name: ingestor-nf-exportacao-worker
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.0
+        envFrom:
+          - configMapRef:
+              name: ingestor-nf-exportacao-config
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+          name: ing-nf-ex-p
