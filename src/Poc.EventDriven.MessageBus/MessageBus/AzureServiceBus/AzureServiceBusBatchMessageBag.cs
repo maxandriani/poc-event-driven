@@ -27,7 +27,7 @@ sealed internal class AzureServiceBusBatchMessageBag<TEvent> : IMessageBag
     {
         CheckResolvedMessage();
         Resolved = true;
-        return _receiver.DeadLetterMessageAsync(_message, $"{reason?.Message}\n{reason?.StackTrace}");
+        return _receiver.DeadLetterMessageAsync(_message, $"{reason?.Message}\n{reason?.InnerException}\n{reason?.StackTrace}");
     }
 
     public Task CompleteAsync()

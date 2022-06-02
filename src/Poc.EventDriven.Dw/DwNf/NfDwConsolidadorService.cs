@@ -41,9 +41,9 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
     {
         _logger.LogInformation("Iniciando consolidação");
 
-        var nfDocuments = new List<NfDocument>(1024); // Tamanho máximo matematicamente possível
-        var uniqueCnpjs = new HashSet<string>(3 * 1024);
-        var uniqueDates = new HashSet<DateTime>(1024);
+        var nfDocuments = new List<NfDocument>(128); // Tamanho máximo matematicamente possível
+        var uniqueCnpjs = new HashSet<string>(3 * 128);
+        var uniqueDates = new HashSet<DateTime>(128);
         var uniqueSkus = new HashSet<string>(); // Não há previsibilidade de tamanho máximo 😢
         var blobAddresses = new Dictionary<Guid, string>();
 
@@ -87,7 +87,14 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
             // Rescheduling
             foreach (var bag in batch.Select(m => m.Bag))
             {
-                await bag.ReScheduleAsync();
+                if (bag.Attempts > 10)
+                {
+                    await bag.AbortAsync(ex);
+                }
+                else
+                {
+                    await bag.ReScheduleAsync();
+                }
             }
         }
         
@@ -262,132 +269,221 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var notasFiscais = await _context.DimNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
-        var notasToAdd = nfs
-            .Select(nf => ParseDimNf(nf, addresses[nf.Chave]))
-            .ExceptBy(notasFiscais.Select(nf => nf.Chave), nf => nf.Chave)
-            .ToList();  // We need to materialize so EF can track id back...;
+        var attempts = 0;
+        List<DimNf>? notasFiscais = null;
 
-        if (notasToAdd.Any())
+        do
         {
-            _context.DimNfs.AddRange(notasToAdd);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+            try
+            {
+                notasFiscais = await _context.DimNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
+                var notasToAdd = nfs
+                    .Select(nf => ParseDimNf(nf, addresses[nf.Chave]))
+                    .ExceptBy(notasFiscais.Select(nf => nf.Chave), nf => nf.Chave)
+                    .ToList();  // We need to materialize so EF can track id back...;
+
+                if (notasToAdd.Any())
+                {
+                    _context.DimNfs.AddRange(notasToAdd);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    notasFiscais = notasFiscais.Union(notasToAdd).ToList();
+                }
+                attempts = 0;
+            }
+            catch
+            {
+                _logger.LogWarning("Falha de integridade ao consolidar DimNfs, tentando novamente...");
+                if (attempts == 1) throw;
+            }
+            finally
+            {
+                attempts--;
+            }
+        } while (attempts > 0);
 
         _logger.LogTrace("DimNfs consolidadas com sucesso!");
 
-        return notasFiscais
-            .Union(notasToAdd)
-            .ToDictionary(k => k.Chave, p => p.Id);
+        return notasFiscais?.ToDictionary(k => k.Chave, p => p.Id) ?? new Dictionary<Guid, int>();
     }
 
     private async Task<Dictionary<string, int>> ConsolidarDimSkusAsync(HashSet<string> uniqueSkus, List<NfDocument> nfs, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var skus = await _context.DimSkus.Where(q => uniqueSkus.Contains(q.Sku)).ToListAsync();
-        var skusToAdd = nfs
-            .SelectMany(nf => nf.Items.Select(item => item.Sku))
-            .Distinct()
-            .Except(skus.Select(sku => sku.Sku))
-            .Select(sku => new DimSku { Sku = sku })
-            .ToList();  // We need to materialize so EF can track id back...;
+        var attempts = 3;
+        List<DimSku>? skus = null;
 
-        if (skusToAdd.Any())
+        do
         {
-            _context.DimSkus.AddRange(skusToAdd);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+            try
+            {
+                skus = await _context.DimSkus.Where(q => uniqueSkus.Contains(q.Sku)).ToListAsync();
+                var skusToAdd = nfs
+                    .SelectMany(nf => nf.Items.Select(item => item.Sku))
+                    .Distinct()
+                    .Except(skus.Select(sku => sku.Sku))
+                    .Select(sku => new DimSku { Sku = sku })
+                    .ToList();  // We need to materialize so EF can track id back...;
+
+                if (skusToAdd.Any())
+                {
+                    _context.DimSkus.AddRange(skusToAdd);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    skus = skus.Union(skusToAdd).ToList();
+                }
+                attempts = 0;
+            }
+            catch
+            {
+                _logger.LogWarning("Falha de integridade ao consolidar DimSkus, tentando novamente...");
+                if (attempts == 1) throw;
+            }
+            finally
+            {
+                attempts--;
+            }
+        } while (attempts > 0);
 
         _logger.LogTrace("DimSku consolidado com sucesso!");
 
-        return skus
-            .Union(skusToAdd)
-            .ToDictionary(q => q.Sku, p => p.Id);
+        return skus?.ToDictionary(q => q.Sku, p => p.Id) ?? new Dictionary<string, int>();
     }
 
     private async Task<Dictionary<DateTime, int>> ConsolidarDimTempoAsync(HashSet<DateTime> uniqueDates, List<NfDocument> nfs, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var datas = await _context.DimTempo.Where(q => uniqueDates.Contains(q.Date)).ToListAsync();
-        var dimTempoToAdd = nfs
-            .Select(nf => nf.Emissao.Date)
-            .Distinct()
-            .Except(datas.Select(q => q.Date))
-            .Select(data => ParseDimTempo(data))
-            .ToList();  // We need to materialize so EF can track id back...;
+        var attempts = 3;
+        List<DimTempo>? datas = null;
 
-        if (dimTempoToAdd.Any())
+        do
         {
-            _context.DimTempo.AddRange(dimTempoToAdd);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+            try
+            {
+                datas = await _context.DimTempo.Where(q => uniqueDates.Contains(q.Date)).ToListAsync();
+                var dimTempoToAdd = nfs
+                    .Select(nf => nf.Emissao.Date)
+                    .Distinct()
+                    .Except(datas.Select(q => q.Date))
+                    .Select(data => ParseDimTempo(data))
+                    .ToList();  // We need to materialize so EF can track id back...;
+
+                if (dimTempoToAdd.Any())
+                {
+                    _context.DimTempo.AddRange(dimTempoToAdd);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    datas = datas.Union(dimTempoToAdd).ToList();
+                }
+                attempts = 0;
+            }
+            catch
+            {
+                _logger.LogWarning("Falha de integridade ao consolidar DimTempo, tentando novamente...");
+                if (attempts == 1) throw;
+            }
+            finally
+            {
+                attempts--;
+            }
+        } while(attempts > 0);
 
         _logger.LogTrace("DimTempo consolidado com sucesso!");
 
-        return datas
-            .Union(dimTempoToAdd)
-            .ToDictionary(q => q.Date, p => p.Id);
+        return datas?.ToDictionary(q => q.Date, p => p.Id) ?? new Dictionary<DateTime, int>();
     }
 
     private async Task<Dictionary<string, int>> ConsolidarDimEmpresasAsync(HashSet<string> uniqueCnpjs, List<NfDocument> nfs, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var empresas = await _context.DimEmpresas.Where(q => uniqueCnpjs.Contains(q.Cnpj)).ToListAsync();
-        var empresasToAdd = nfs
-            .SelectMany(nf => new List<EmpresaDocument> 
-            {
-                nf.Empresa    ?? new EmpresaDocument(),
-                nf.Emissor    ?? new EmpresaDocument(),
-                nf.Exportador ?? new EmpresaDocument()
-            })
-            .DistinctBy(q => q.Cnpj)
-            .Where(empresa => empresa.Cnpj != null && empresas.Any(q => q.Cnpj == empresa.Cnpj) == false)
-            .Select(empresa => ParseDimEmpresa(empresa))
-            .ToList();  // We need to materialize so EF can track id back...
+        var attempts = 3;
+        IEnumerable<DimEmpresa>? empresas = null;
 
-        if (empresasToAdd.Any())
+        do
         {
-            _context.DimEmpresas.AddRange(empresasToAdd);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+            try
+            {
+                empresas = await _context.DimEmpresas.Where(q => uniqueCnpjs.Contains(q.Cnpj)).ToListAsync();
+                var empresasToAdd = nfs
+                    .SelectMany(nf => new List<EmpresaDocument>
+                    {
+                        nf.Empresa    ?? new EmpresaDocument(),
+                        nf.Emissor    ?? new EmpresaDocument(),
+                        nf.Exportador ?? new EmpresaDocument()
+                    })
+                    .DistinctBy(q => q.Cnpj)
+                    .Where(empresa => empresa.Cnpj != null && empresas.Any(q => q.Cnpj == empresa.Cnpj) == false)
+                    .Select(empresa => ParseDimEmpresa(empresa))
+                    .ToList();  // We need to materialize so EF can track id back...
+
+                if (empresasToAdd.Any())
+                {
+                    _context.DimEmpresas.AddRange(empresasToAdd);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    empresas = empresas.Union(empresasToAdd).ToList();
+                }
+                attempts = 0;
+            }
+            catch
+            {
+                _logger.LogWarning("Falha de integridade ao consolidar DimEmpresa, tentando novamente...");
+                if (attempts == 1) throw;
+            }
+            finally
+            {
+                attempts--;
+            }
+        } while (attempts > 0);
 
         _logger.LogTrace("DimEmpresas consolidadas");
 
-        return empresas
-            .Union(empresasToAdd)
-            .ToDictionary(q => q.Cnpj, p => p.Id);
+        return empresas?.ToDictionary(q => q.Cnpj, p => p.Id) ?? new Dictionary<string, int>();
     }
 
     private async Task<Dictionary<TipoOperacao, int>> ConsolidarDimTipoOperacaoAsync(CancellationToken cancellationToken)
     {
         var operacoes = new TipoOperacao[] { TipoOperacao.Saida, TipoOperacao.Entrada, TipoOperacao.NaoAtribuido };
-        var consultaTipoOperacoes = await _context.DimTipoOperacoes.Where(q => operacoes.Contains(q.TipoOperacao)).ToListAsync(cancellationToken);
-        if (consultaTipoOperacoes.Count() != operacoes.Length)
+        var attempt = 3;
+        List<DimTipoOperacao>? consultaTipoOperacoes = null;
+
+        do
         {
-            var novosTiposOperacoes = operacoes
-                .Except(consultaTipoOperacoes.Select(p => p.TipoOperacao))
-                .Select(operacao => new DimTipoOperacao
+            try
+            {
+                consultaTipoOperacoes = await _context.DimTipoOperacoes.ToListAsync(cancellationToken);
+                if (consultaTipoOperacoes.Count() == 0)
                 {
-                    TipoOperacao = operacao,
-                    Descricao = operacao switch
-                    {
-                        TipoOperacao.Entrada => "Entrada",
-                        TipoOperacao.Saida => "Saída",
-                        _ => "Não Atribuído"
-                    }
-                })
-                .ToList(); // We need to materialize so EF can track id back...
+                    var novosTiposOperacoes = operacoes
+                        .Select(operacao => new DimTipoOperacao
+                        {
+                            TipoOperacao = operacao,
+                            Descricao = operacao switch
+                            {
+                                TipoOperacao.Entrada => "Entrada",
+                                TipoOperacao.Saida => "Saída",
+                                _ => "Não Atribuído"
+                            }
+                        })
+                        .ToList(); // We need to materialize so EF can track id back...
 
-            _context.DimTipoOperacoes.AddRange(novosTiposOperacoes);
-            await _context.SaveChangesAsync(cancellationToken);
-            consultaTipoOperacoes.AddRange(novosTiposOperacoes);
-        }
+                    _context.DimTipoOperacoes.AddRange(novosTiposOperacoes);
+                    await _context.SaveChangesAsync(cancellationToken);
+                    consultaTipoOperacoes.AddRange(novosTiposOperacoes);
+                }
+                attempt = 0;
+            }
+            catch
+            {
+                _logger.LogWarning($"Falha de integridade ao tentar consolidar DimTipoOperação. Tentando novamente...");
+                if (attempt == 1) throw;
+            }
+            finally
+            {
+                attempt--;
+            }
+        } while (attempt > 0);
 
-        return consultaTipoOperacoes
-            .ToDictionary(k => k.TipoOperacao, p => p.Id);
+        return consultaTipoOperacoes?.ToDictionary(k => k.TipoOperacao, p => p.Id) ?? new Dictionary<TipoOperacao, int>();
     }
 
     private DimTempo ParseDimTempo(DateTime tempo)

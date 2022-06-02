@@ -40,6 +40,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Cnpj")
+                        .IsUnique();
+
                     b.ToTable("DimEmpresas");
                 });
 
@@ -65,6 +68,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Dia", "Mes", "Ano")
+                        .IsUnique();
+
                     b.ToTable("DimTempo");
                 });
 
@@ -84,6 +90,9 @@ namespace Poc.EventDriven.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TipoOperacao")
+                        .IsUnique();
 
                     b.ToTable("DimTipoOperacoes");
                 });
@@ -147,6 +156,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Chave")
+                        .IsUnique();
+
                     b.HasIndex("DimEmissaoId");
 
                     b.HasIndex("DimEmissorId");
@@ -183,6 +195,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Chave")
+                        .IsUnique();
+
                     b.ToTable("DimNfs");
                 });
 
@@ -199,6 +214,9 @@ namespace Poc.EventDriven.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Sku")
+                        .IsUnique();
 
                     b.ToTable("DimSkus");
                 });

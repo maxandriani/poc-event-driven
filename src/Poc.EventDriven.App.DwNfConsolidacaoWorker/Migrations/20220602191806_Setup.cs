@@ -210,6 +210,36 @@ namespace Poc.EventDriven.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_DimEmpresas_Cnpj",
+                table: "DimEmpresas",
+                column: "Cnpj",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DimNfs_Chave",
+                table: "DimNfs",
+                column: "Chave",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DimSkus_Sku",
+                table: "DimSkus",
+                column: "Sku",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DimTempo_Dia_Mes_Ano",
+                table: "DimTempo",
+                columns: new[] { "Dia", "Mes", "Ano" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DimTipoOperacoes_TipoOperacao",
+                table: "DimTipoOperacoes",
+                column: "TipoOperacao",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FactNfItems_DimEmissaoId",
                 table: "FactNfItems",
                 column: "DimEmissaoId");
@@ -243,6 +273,12 @@ namespace Poc.EventDriven.Migrations
                 name: "IX_FactNfItems_DimTipoOperacaoId",
                 table: "FactNfItems",
                 column: "DimTipoOperacaoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FactNfs_Chave",
+                table: "FactNfs",
+                column: "Chave",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_FactNfs_DimEmissaoId",

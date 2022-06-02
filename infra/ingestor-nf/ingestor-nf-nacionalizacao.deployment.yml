@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: ing-nf-nac-dep
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: ingestor-nf-nacionalizacao-worker
@@ -14,17 +14,17 @@ spec:
     spec:
       containers:
       - name: ingestor-nf-nacionalizacao-worker
-        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.5
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.7
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: ingestor-nf-nacionalizacao-config
         resources:
           limits:
-            memory: "512Mi"
+            memory: "256Mi"
             cpu: "500m"
           requests:
-            memory: "120Mi"
+            memory: "128Mi"
             cpu: "100m"
         ports:
         - containerPort: 80

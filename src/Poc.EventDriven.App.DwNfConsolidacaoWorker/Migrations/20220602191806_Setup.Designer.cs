@@ -12,7 +12,7 @@ using Poc.EventDriven.Data;
 namespace Poc.EventDriven.Migrations
 {
     [DbContext(typeof(DwNfDbContext))]
-    [Migration("20220601233425_Setup")]
+    [Migration("20220602191806_Setup")]
     partial class Setup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,6 +42,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Cnpj")
+                        .IsUnique();
+
                     b.ToTable("DimEmpresas");
                 });
 
@@ -67,6 +70,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Dia", "Mes", "Ano")
+                        .IsUnique();
+
                     b.ToTable("DimTempo");
                 });
 
@@ -86,6 +92,9 @@ namespace Poc.EventDriven.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TipoOperacao")
+                        .IsUnique();
 
                     b.ToTable("DimTipoOperacoes");
                 });
@@ -149,6 +158,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Chave")
+                        .IsUnique();
+
                     b.HasIndex("DimEmissaoId");
 
                     b.HasIndex("DimEmissorId");
@@ -185,6 +197,9 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Chave")
+                        .IsUnique();
+
                     b.ToTable("DimNfs");
                 });
 
@@ -201,6 +216,9 @@ namespace Poc.EventDriven.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Sku")
+                        .IsUnique();
 
                     b.ToTable("DimSkus");
                 });

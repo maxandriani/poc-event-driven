@@ -32,12 +32,32 @@ public class DwNfDbContext : DbContext, IDwNfDbContext
 
     public DbSet<FactNfItem> FactNfItems => Set<FactNfItem>();
 
-    //protected override void OnModelCreating(ModelBuilder modelBuilder)
-    //{
-    //    base.OnModelCreating(modelBuilder);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
 
-    //    modelBuilder.Entity<DimTempo>()
-    //        .Property(p => p.Date)
-    //            .HasColumnType("timestamp without time zone");
-    //}
+        modelBuilder.Entity<DimEmpresa>()
+            .HasIndex(i => new { i.Cnpj })
+            .IsUnique();
+
+        modelBuilder.Entity<DimTempo>()
+            .HasIndex(i => new { i.Dia, i.Mes, i.Ano })
+            .IsUnique();
+
+        modelBuilder.Entity<DimTipoOperacao>()
+            .HasIndex(i => new { i.TipoOperacao })
+            .IsUnique();
+
+        modelBuilder.Entity<DimSku>()
+            .HasIndex(i => new { i.Sku })
+            .IsUnique();
+
+        modelBuilder.Entity<DimNf>()
+            .HasIndex(i => new { i.Chave })
+            .IsUnique();
+
+        modelBuilder.Entity<FactNf>()
+            .HasIndex(i => new { i.Chave })
+            .IsUnique();
+    }
 }

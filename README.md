@@ -35,9 +35,8 @@ az deployment group create -g=poc-event-driven-rg --template-file=infra/az/servi
 ## Regismes DB
 dotnet ef database update -p src/Poc.EventDriven.App.RegimeApi/Poc.EventDriven.App.RegimeApi.csproj
 
-dotnet ef database update -p src/Poc.EventDriven.App.DwNfConsolidadorWorker/Poc.EventDriven.App.DwNfConsolidadorWorker.csproj
-
 ## DwNf DB
+dotnet ef database update -p src/Poc.EventDriven.App.DwNfConsolidadorWorker/Poc.EventDriven.App.DwNfConsolidadorWorker.csproj
 
 ```
 
