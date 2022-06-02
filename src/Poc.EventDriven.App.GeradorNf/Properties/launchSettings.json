@@ -1,0 +1,32 @@
+{
+  "profiles": {
+    "Cliente": {
+      "commandName": "Project",
+      "commandLineArgs": "cliente"
+    },
+    "Cliente Listar": {
+      "commandName": "Project",
+      "commandLineArgs": "cliente listar"
+    },
+    "Cliente Gerar": {
+      "commandName": "Project",
+      "commandLineArgs": "cliente gerar 5"
+    },
+    "Cliente por cnpj": {
+      "commandName": "Project",
+      "commandLineArgs": "cliente gerar cnpj \"85.758.086/0001-79\""
+    },
+    "Bom Gerar": {
+      "commandName": "Project",
+      "commandLineArgs": "bom gerar \"85.758.086/0001-79\" 1"
+    },
+    "Nf Gerar": {
+      "commandName": "Project",
+      "commandLineArgs": "nf gerar \"85.758.086/0001-79\" 1024 \"6/2022\""
+    },
+    "Nf Gerar (local)": {
+      "commandName": "Project",
+      "commandLineArgs": "nf gerar \"85.758.086/0001-79\" 1024 \"6/2022\" --grpc-url=\"http://localhost:5288\""
+    }
+  }
+}

@@ -40,3 +40,17 @@ dotnet ef database update -p src/Poc.EventDriven.App.DwNfConsolidadorWorker/Poc.
 ## DwNf DB
 
 ```
+
+## Gerador de Nfs
+
+```sh
+## Criar um cliente
+Poc.EventDriven.App.GeradorNf cliente gerar 1 --cnpj "Custom cnpj" --regimes-url "api de regimes"
+
+## Gerar algumas BOMs
+Poc.EventDriven.App.GeradorNf bom gerar "cnpj" 10 --regimes-url "api de regimes"
+
+## Gerar NFs
+Poc.EventDriven.App.GeradorNf nf gerar "cnpj" 10000 6/2022 --regismes-url "api de regimes" --grpc-url "api de ingestão"
+
+```

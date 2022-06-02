@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,6 +17,9 @@
 
   <ItemGroup>
 	<Protobuf Include="Protos\**\*.proto" OutputDir="Dynamic" CompileOutputs="false" ProtoRoot="Protos" GrpcServices="None" />
+	<ProjectReference Include="..\Poc.EventDriven.Common\Poc.EventDriven.Common.csproj" />
+	<ProjectReference Include="..\Poc.EventDriven.Core\Poc.EventDriven.Core.csproj" />
+	<ProjectReference Include="..\Poc.EventDriven.Regimes\Poc.EventDriven.Regimes.csproj" />
 	<Protobuf Update="Protos\**\*_service.proto" OutputDir="Dynamic" ProtoRoot="Protos" GrpcServices="Client" />
   </ItemGroup>
 
