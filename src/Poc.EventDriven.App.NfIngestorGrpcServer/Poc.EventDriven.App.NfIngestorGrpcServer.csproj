@@ -17,6 +17,10 @@
 
   <ItemGroup>
 	<Protobuf Include="Protos\**\*.proto" OutputDir="Dynamic" CompileOutputs="false" ProtoRoot="Protos" GrpcServices="None" />
+	<ProjectReference Include="..\Poc.EventDriven.Common\Poc.EventDriven.Common.csproj" />
+	<ProjectReference Include="..\Poc.EventDriven.Core\Poc.EventDriven.Core.csproj" />
+	<ProjectReference Include="..\Poc.EventDriven.Dw\Poc.EventDriven.Dw.csproj" />
+	<ProjectReference Include="..\Poc.EventDriven.MessageBus\Poc.EventDriven.MessageBus.csproj" />
     <Protobuf Update="Protos\**\*_service.proto" OutputDir="Dynamic" ProtoRoot="Protos" GrpcServices="Server" />
   </ItemGroup>
 

@@ -68,17 +68,29 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
         _logger.LogTrace("Searialização de documentos concluída.");
 
-        var tiposOperacoes = await ConsolidarDimTipoOperacaoAsync(cancellationToken);
-        var empresas = await ConsolidarDimEmpresasAsync(uniqueCnpjs, nfDocuments, cancellationToken);
-        var datas = await ConsolidarDimTempoAsync(uniqueDates, nfDocuments, cancellationToken);
-        var skus = await ConsolidarDimSkusAsync(uniqueSkus, nfDocuments, cancellationToken);
-        var dimNfs = await ConsolidarDimNfsAsync(nfDocuments, blobAddresses, cancellationToken);
+        try
+        {
+            var tiposOperacoes = await ConsolidarDimTipoOperacaoAsync(cancellationToken);
+            var empresas = await ConsolidarDimEmpresasAsync(uniqueCnpjs, nfDocuments, cancellationToken);
+            var datas = await ConsolidarDimTempoAsync(uniqueDates, nfDocuments, cancellationToken);
+            var skus = await ConsolidarDimSkusAsync(uniqueSkus, nfDocuments, cancellationToken);
+            var dimNfs = await ConsolidarDimNfsAsync(nfDocuments, blobAddresses, cancellationToken);
+
+            _logger.LogTrace("Consolidação de dimenções concluída");
+
+            await ConsolidarFactNfsAsync(nfDocuments, blobAddresses, tiposOperacoes, empresas, datas, cancellationToken);
+            await ConsolidarFactNfItemAsync(nfDocuments, tiposOperacoes, empresas, datas, skus, dimNfs, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message, ex);
+            // Rescheduling
+            foreach (var bag in batch.Select(m => m.Bag))
+            {
+                await bag.ReScheduleAsync();
+            }
+        }
         
-        _logger.LogTrace("Consolidação de dimenções concluída");
-
-        await ConsolidarFactNfsAsync(nfDocuments, blobAddresses, tiposOperacoes, empresas, datas, cancellationToken);
-        await ConsolidarFactNfItemAsync(nfDocuments, tiposOperacoes, empresas, datas, skus, dimNfs, cancellationToken);
-
         _logger.LogInformation("Consolidação concluída.");
     }
 
@@ -168,7 +180,7 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                     nf.DimExportadorId = nfDict[nf.Chave]?.Exportador?.Cnpj != null
                         ? empresas[nfDict[nf.Chave].Exportador!.Cnpj]
-                        : 0;
+                        : null;
 
                     nf.DimEmissorId = nfDict[nf.Chave]?.Emissor?.Cnpj != null
                         ? empresas[nfDict[nf.Chave].Emissor!.Cnpj]
@@ -209,7 +221,7 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                 fact.DimExportadorId = nf?.Exportador?.Cnpj != null
                     ? empresas[nf.Exportador!.Cnpj]
-                    : 0;
+                    : null;
 
                 fact.DimEmissorId = nf?.Emissor?.Cnpj != null
                     ? empresas[nf.Emissor!.Cnpj]

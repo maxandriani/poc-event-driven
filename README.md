@@ -8,6 +8,8 @@ Apresentação de conceitos básicos de orientação a eventos para stakeholders
 docker buildx build -t maxandriani/poc.eventdriven.app.regimeapi:1.0.0 -f ./src/Poc.EventDriven.App.RegimeApi/Dockerfile --platform linux/amd64,linux/arm64 --push .
 
 docker buildx build -t maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.0 -f ./src/Poc.EventDriven.App.DwNfConsolidacaoWorker/Dockerfile --platform linux/amd64,linux/arm64 --push .
+
+docker buildx build -t maxandriani/poc.eventdriven.app.nfingestorgrpc:1.0.0 -f ./src/Poc.EventDriven.App.NfIngestorGrpcServer/Dockerfile --platform linux/amd64,linux/arm64 --push .
 ```
 
 ## Deploy Infra

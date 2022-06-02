@@ -17,7 +17,7 @@ public class FactNfItem
 
     public int DimEmpresaId { get; set; }
     public DimEmpresa? DimEmpresa { get; set; }
-    public int DimExportadorId { get; set; }
+    public int? DimExportadorId { get; set; }
     public DimEmpresa? DimExportador { get; set; }
     public int DimEmissorId { get; set; }
     public DimEmpresa? DimEmissor { get; set; }

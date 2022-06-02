@@ -29,7 +29,7 @@ sealed internal class AzureServiceBusMessageBag<TEvent> : IMessageBag
     {
         CheckResolvedMessage();
         Resolved = true;
-        return _messageArgs.DeadLetterMessageAsync(_messageArgs.Message, reason?.Message);
+        return _messageArgs.DeadLetterMessageAsync(_messageArgs.Message, $"{reason?.Message}\n{reason?.StackTrace}");
     }
 
     public Task CompleteAsync()

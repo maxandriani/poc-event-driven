@@ -32,12 +32,12 @@ public class DwNfDbContext : DbContext, IDwNfDbContext
 
     public DbSet<FactNfItem> FactNfItems => Set<FactNfItem>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
+    //protected override void OnModelCreating(ModelBuilder modelBuilder)
+    //{
+    //    base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<DimTempo>()
-            .Property(p => p.Date)
-                .HasColumnType("timestamp without time zone");
-    }
+    //    modelBuilder.Entity<DimTempo>()
+    //        .Property(p => p.Date)
+    //            .HasColumnType("timestamp without time zone");
+    //}
 }

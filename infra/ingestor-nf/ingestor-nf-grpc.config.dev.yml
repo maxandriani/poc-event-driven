@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ing-nf-grpc-config
+  namespace: poc-event-driven-ns
+data:
+  ConnectionStrings__NotasFiscaisSb: Endpoint=sb://poc-ingestao-sb0.servicebus.windows.net/;SharedAccessKeyName=Poc.EventDriven.App.NfIngestorGrpcServer;SharedAccessKey=wt+pRWT5Dscdh1V6LNaYKNAPJXO/eRWoYZqDwAIJFeU=;EntityPath=nf_ingress_tp
+  ConnectionStrings__NotasFiscaisStorage: BlobEndpoint=https://poceventdrivensg.blob.core.windows.net/;QueueEndpoint=https://poceventdrivensg.queue.core.windows.net/;FileEndpoint=https://poceventdrivensg.file.core.windows.net/;TableEndpoint=https://poceventdrivensg.table.core.windows.net/;SharedAccessSignature=sv=2020-08-04&ss=bf&srt=sco&sp=rwdlacx&se=2023-05-29T22:06:56Z&st=2022-05-29T14:06:56Z&sip=177.155.203.70&spr=https&sig=c4UOlaT%2B3UKopKPtULZC%2F75l9zjJPyX71OrxOUxXfAI%3D

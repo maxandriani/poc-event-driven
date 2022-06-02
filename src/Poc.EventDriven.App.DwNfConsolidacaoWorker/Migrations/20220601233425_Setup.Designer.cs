@@ -12,7 +12,7 @@ using Poc.EventDriven.Data;
 namespace Poc.EventDriven.Migrations
 {
     [DbContext(typeof(DwNfDbContext))]
-    [Migration("20220529205507_Setup")]
+    [Migration("20220601233425_Setup")]
     partial class Setup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,7 +57,7 @@ namespace Poc.EventDriven.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Dia")
                         .HasColumnType("integer");
@@ -114,7 +114,7 @@ namespace Poc.EventDriven.Migrations
                     b.Property<int>("DimEmpresaId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DimExportadorId")
+                    b.Property<int?>("DimExportadorId")
                         .HasColumnType("integer");
 
                     b.Property<int>("DimOperacaoId")
@@ -226,7 +226,7 @@ namespace Poc.EventDriven.Migrations
                     b.Property<int>("DimEmpresaId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("DimExportadorId")
+                    b.Property<int?>("DimExportadorId")
                         .HasColumnType("integer");
 
                     b.Property<int>("DimNfId")
@@ -303,9 +303,7 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasOne("Poc.EventDriven.DwNf.DimEmpresa", "DimExportador")
                         .WithMany()
-                        .HasForeignKey("DimExportadorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DimExportadorId");
 
                     b.HasOne("Poc.EventDriven.DwNf.DimTipoOperacao", "DimOperacao")
                         .WithMany()
@@ -346,9 +344,7 @@ namespace Poc.EventDriven.Migrations
 
                     b.HasOne("Poc.EventDriven.DwNf.DimEmpresa", "DimExportador")
                         .WithMany()
-                        .HasForeignKey("DimExportadorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("DimExportadorId");
 
                     b.HasOne("Poc.EventDriven.DwNf.Items.DimNf", "DimNf")
                         .WithMany()

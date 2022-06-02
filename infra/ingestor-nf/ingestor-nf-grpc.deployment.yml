@@ -1,31 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ing-nf-exp-dep
+  name: ing-nf-grpc-dep
+  namespace: poc-event-driven-ns
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ingestor-nf-exportacao-worker
+      app: ing-nf-grpc
   template:
     metadata:
       labels:
-        app: ingestor-nf-exportacao-worker
+        app: ing-nf-grpc
     spec:
       containers:
-      - name: ingestor-nf-exportacao-worker
-        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.5
+      - name: ing-nf-grpc
+        image: maxandriani/poc.eventdriven.app.nfingestorgrpc:1.0.1
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
-              name: ingestor-nf-exportacao-config
+              name: ing-nf-grpc-config
         resources:
           limits:
             memory: "512Mi"
-            cpu: "500m"
+            cpu: "1"
           requests:
             memory: "128Mi"
-            cpu: "100m"
+            cpu: "200m"
         ports:
         - containerPort: 80
-          name: ing-nf-ex-p
+          name: ing-nf-grpc-p

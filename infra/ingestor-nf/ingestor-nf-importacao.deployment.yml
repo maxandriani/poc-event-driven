@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: ingestor-nf-importacao-worker
-        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.0
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.5
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: ingestor-nf-importacao-config
@@ -22,6 +23,9 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
         ports:
         - containerPort: 80
           name: ing-nf-im-p

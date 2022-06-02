@@ -62,7 +62,7 @@ namespace Poc.EventDriven.Migrations
                     Dia = table.Column<int>(type: "integer", nullable: false),
                     Mes = table.Column<int>(type: "integer", nullable: false),
                     Ano = table.Column<int>(type: "integer", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -92,7 +92,7 @@ namespace Poc.EventDriven.Migrations
                     DimNfId = table.Column<int>(type: "integer", nullable: false),
                     DimSkuId = table.Column<int>(type: "integer", nullable: false),
                     DimEmpresaId = table.Column<int>(type: "integer", nullable: false),
-                    DimExportadorId = table.Column<int>(type: "integer", nullable: false),
+                    DimExportadorId = table.Column<int>(type: "integer", nullable: true),
                     DimEmissorId = table.Column<int>(type: "integer", nullable: false),
                     DimEmissaoId = table.Column<int>(type: "integer", nullable: false),
                     DimTipoOperacaoId = table.Column<int>(type: "integer", nullable: false),
@@ -125,8 +125,7 @@ namespace Poc.EventDriven.Migrations
                         name: "FK_FactNfItems_DimEmpresas_DimExportadorId",
                         column: x => x.DimExportadorId,
                         principalTable: "DimEmpresas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_FactNfItems_DimNfs_DimNfId",
                         column: x => x.DimNfId,
@@ -160,7 +159,7 @@ namespace Poc.EventDriven.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     DimEmpresaId = table.Column<int>(type: "integer", nullable: false),
-                    DimExportadorId = table.Column<int>(type: "integer", nullable: false),
+                    DimExportadorId = table.Column<int>(type: "integer", nullable: true),
                     DimEmissorId = table.Column<int>(type: "integer", nullable: false),
                     DimEmissaoId = table.Column<int>(type: "integer", nullable: false),
                     DimOperacaoId = table.Column<int>(type: "integer", nullable: false),
@@ -195,8 +194,7 @@ namespace Poc.EventDriven.Migrations
                         name: "FK_FactNfs_DimEmpresas_DimExportadorId",
                         column: x => x.DimExportadorId,
                         principalTable: "DimEmpresas",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_FactNfs_DimTempo_DimEmissaoId",
                         column: x => x.DimEmissaoId,

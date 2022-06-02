@@ -12,8 +12,8 @@ public class CollectionResult<TType> : ISerializable
         TotalCount = totalCount;
     }
 
-    public IEnumerable<TType> Items { get; private set; }
-    public int TotalCount { get; private set; }
+    public IEnumerable<TType> Items { get; protected set; }
+    public int TotalCount { get; protected set; }
 
     public void GetObjectData(SerializationInfo info, StreamingContext context)
     {

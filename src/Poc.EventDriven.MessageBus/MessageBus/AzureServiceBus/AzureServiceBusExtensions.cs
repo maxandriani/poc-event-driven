@@ -59,4 +59,19 @@ public static class AzureServiceBusExtensions
 
         return configuration;
     }
+
+    public static IAzureServiceBusDispatchConfigurationBuilder AddAzureServiceBusDispatcher(this IServiceCollection services, string clientName)
+    {
+        if (services.Any(q => q.ServiceType.Equals(typeof(IAzureServiceBusDispatchSettings))) == false)
+        {
+            services.AddSingleton<IAzureServiceBusDispatchSettings, ServiceBusDispatchConfigurations>();
+        }
+
+        if (services.Any(q => q.ServiceType.Equals(typeof(IMessageBusDispatcher))) == false)
+        {
+            services.AddSingleton<IMessageBusDispatcher, AzureServiceBusDispatcher>();
+        }
+
+        return new AzureServiceBusDispatchConfigurationBuilder(clientName);
+    }
 }

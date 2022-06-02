@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package poc.eventdriven.nfingress.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Poc.EventDriven.Protos.NfIngress.V1";
+
+enum NfTipoOperacao
+{
+    NF_TIPO_OPERACAO_UNSPECIFIED = 0;
+    NF_TIPO_OPERACAO_ENTRADA = 1;
+    NF_TIPO_OPERACAO_SAIDA = 2;
+}
+
+message NfEmpresaMessage {
+	string cnpj = 1;
+    string nome = 2;
+    string razao_social = 3;
+}
+
+message NfItemMessage
+{
+    string sku = 1;
+    string descricao = 2;
+    int32 quantidade = 3;
+    int32 valor_brl = 4;
+    int32 valor_icms_brl = 5;
+    int32 valor_icmsst_brl = 6;
+    int32 valor_ii_brl = 7;
+    int32 valor_ipi_brl = 8;
+    int32 valor_pis_brl = 9;
+    int32 valor_cofins_brl = 10;
+}
+
+message NfMessage
+{
+    string chave = 1;
+    int32 numero = 2;
+    int32 serie = 3;
+
+    // dimensões
+    NfEmpresaMessage empresa = 4;
+    optional NfEmpresaMessage exportador = 5;
+    NfEmpresaMessage emissor = 6;
+    google.protobuf.Timestamp emissao = 7;
+    NfTipoOperacao operacao = 8;
+
+    repeated NfItemMessage items = 9;
+}

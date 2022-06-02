@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package poc.eventdriven.nfingress.v1;
+
+import "nfingress/v1/nfs.proto";
+
+option csharp_namespace = "Poc.EventDriven.Protos.NfIngress.V1";
+
+service NfIngressService {
+	rpc AddMany(stream NfIngressAddManyRequest) returns (NfIngressAddManyResponse);
+}
+
+message NfIngressAddManyRequest {
+	poc.eventdriven.nfingress.v1.NfMessage body = 1;
+}
+
+message NfIngressAddManyResponse {
+	int32 status_code = 1;
+	optional string body = 2;
+}
