@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using Poc.EventDriven.MessageBus.Abstractions;
 using Poc.EventDriven.MessageBus.AzureServiceBus.Abstractions;
 
+using System.Text.Json;
+
 namespace Poc.EventDriven.MessageBus.AzureServiceBus;
 
 sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusManager
@@ -64,7 +66,7 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
             try
             {
                 var receivedMessages = await _receiver.ReceiveMessagesAsync(
-                    maxMessages: 1024,
+                    maxMessages: 128,
                     maxWaitTime: TimeSpan.FromMinutes(5),
                     cancellationToken);
 
@@ -72,7 +74,10 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
 
                 payload = receivedMessages
                 .Select(x => new MessageWithBag<TEvent>(
-                    x.Body.ToObjectFromJson<TEvent>(),
+                    x.Body.ToObjectFromJson<TEvent>(new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }),
                     new AzureServiceBusBatchMessageBag<TEvent>(x, _receiver)))
                 .ToList();
                 _logger.LogInformation($"New chunk of {receivedMessages.Count} messages received.");
@@ -112,8 +117,8 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
     public async ValueTask DisposeAsync()
     {
         _stoppingTokenSource?.Cancel();
-        await _client.DisposeAsync();
         await _receiver.DisposeAsync();
+        await _client.DisposeAsync();
     }
 
     public void Dispose() => DisposeAsync().GetAwaiter();

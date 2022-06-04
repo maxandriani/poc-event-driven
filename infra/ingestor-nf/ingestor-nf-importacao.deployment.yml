@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ingestor-nf-importacao-worker
-        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.7
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.8
         imagePullPolicy: Always
         envFrom:
           - configMapRef:

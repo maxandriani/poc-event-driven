@@ -34,7 +34,7 @@ public static class AzureServiceBusExtensions
         services.AddHostedService(serviceProvider =>
         {
             return ActivatorUtilities
-                .CreateInstance<AzureServiceBusHostedService<TEvent>>(
+                .CreateInstance<AzureServiceBusBatchHostedService<TEvent>>(
                     serviceProvider,
                     Options.Options.Create<IAzureServiceBusSettings>(configuration));
         });

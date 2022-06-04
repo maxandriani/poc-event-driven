@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ing-nf-grpc
-        image: maxandriani/poc.eventdriven.app.nfingestorgrpc:1.0.1
+        image: maxandriani/poc.eventdriven.app.nfingestorgrpc:1.0.2
         imagePullPolicy: Always
         envFrom:
           - configMapRef:

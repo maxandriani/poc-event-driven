@@ -27,7 +27,7 @@ builder.ConfigureServices((context, services) =>
             .UseNpgsql(context.Configuration.GetConnectionString("DwNfDatabase"))
             .EnableDetailedErrors());
     
-    services.AddAzureServiceBusSessionBatchWorker<NfConsolidacaoEvent, NfDwConsolidadorService>()
+    services.AddAzureServiceBusBatchWorker<NfConsolidacaoEvent, NfDwConsolidadorService>()
         .WithConnectionString(context.Configuration.GetConnectionString("ConsolidacaoServiceBusSubscription"))
         .WithTopicSubscription(
             context.Configuration.GetValue<string>("ServiceBus:ConsolidacaoServiceBusSubscription:TopicName"),

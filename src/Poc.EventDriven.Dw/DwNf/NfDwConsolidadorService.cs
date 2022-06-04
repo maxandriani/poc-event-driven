@@ -23,15 +23,15 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
     private readonly ILogger<NfDwConsolidadorService> _logger;
     private readonly BlobContainerClient _container;
-    private readonly IDwNfDbContext _context;
+    private readonly IRelationalDbContextFactory<IDwNfDbContext> _contextFactory;
 
     public NfDwConsolidadorService(
         ILogger<NfDwConsolidadorService> logger,
         IAzureClientFactory<BlobServiceClient> blobClientFactory,
-        IDwNfDbContext dbContext)
+        IRelationalDbContextFactory<IDwNfDbContext> dbContext)
     {
         _logger = logger;
-        _context = dbContext;
+        _contextFactory = dbContext;
         _container = blobClientFactory
             .CreateClient(NfStorageConsts.NfStorageName)
             .GetBlobContainerClient(NfStorageConsts.NfContainerName);
@@ -112,18 +112,19 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        using var context = await _contextFactory.CreateDbContextAsync();
         // NfItem é um caso especial... não vamos gastar recursos tentando atualizar as linhas... é mais eficiente dropar e inserir denovo...
-        _context.FactNfItems
+        context.FactNfItems
             .RemoveRange(
-                _context.FactNfItems
-                .Include(nfi => nfi.DimNf)
-                .Where(nfi => nfDocuments
-                    .Select(nf => nf.Chave)
-                    .Contains(nfi.DimNf.Chave)));
+                context.FactNfItems
+                    .Include(nfi => nfi.DimNf)
+                    .Where(nfi => nfDocuments
+                        .Select(nf => nf.Chave)
+                        .Contains(nfi.DimNf.Chave)));
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
-        _context.FactNfItems
+        context.FactNfItems
             .AddRange(
                 nfDocuments
                     .SelectMany(nf => nf.Items.Select(nfItem => new { Nf = nf, NfItem = nfItem }))
@@ -159,7 +160,7 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
                         return nfItem;
                     }));
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
         _logger.LogTrace("FactNfItem consolidados com sucesso!");
     }
 
@@ -173,12 +174,13 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var nfsAAtualizar = await _context.FactNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
+        using var context = await _contextFactory.CreateDbContextAsync();
+        var nfsAAtualizar = await context.FactNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
 
         if (nfsAAtualizar.Any())
         {
             var nfDict = nfs.ToDictionary(k => k.Chave);
-            _context.FactNfs.UpdateRange(nfsAAtualizar
+            context.FactNfs.UpdateRange(nfsAAtualizar
                 .Select(nf =>
                 {
                     nf.DimEmpresaId = nfDict[nf.Chave]?.Empresa?.Cnpj != null
@@ -257,11 +259,11 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
         if (nfsAInserir.Any())
         {
-            _context.FactNfs.AddRange(nfsAInserir);
+            context.FactNfs.AddRange(nfsAInserir);
             _logger.LogTrace("Novas notas fiscais inseridas.");
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
         _logger.LogTrace("Notas fiscais consolidadas");
     }
 
@@ -276,7 +278,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
         {
             try
             {
-                notasFiscais = await _context.DimNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
+                var context = await _contextFactory.CreateDbContextAsync();
+                notasFiscais = await context.DimNfs.Where(q => nfs.Select(nf => nf.Chave).Contains(q.Chave)).ToListAsync();
                 var notasToAdd = nfs
                     .Select(nf => ParseDimNf(nf, addresses[nf.Chave]))
                     .ExceptBy(notasFiscais.Select(nf => nf.Chave), nf => nf.Chave)
@@ -284,8 +287,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                 if (notasToAdd.Any())
                 {
-                    _context.DimNfs.AddRange(notasToAdd);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    context.DimNfs.AddRange(notasToAdd);
+                    await context.SaveChangesAsync(cancellationToken);
                     notasFiscais = notasFiscais.Union(notasToAdd).ToList();
                 }
                 attempts = 0;
@@ -317,7 +320,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
         {
             try
             {
-                skus = await _context.DimSkus.Where(q => uniqueSkus.Contains(q.Sku)).ToListAsync();
+                var context = await _contextFactory.CreateDbContextAsync();
+                skus = await context.DimSkus.Where(q => uniqueSkus.Contains(q.Sku)).ToListAsync();
                 var skusToAdd = nfs
                     .SelectMany(nf => nf.Items.Select(item => item.Sku))
                     .Distinct()
@@ -327,8 +331,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                 if (skusToAdd.Any())
                 {
-                    _context.DimSkus.AddRange(skusToAdd);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    context.DimSkus.AddRange(skusToAdd);
+                    await context.SaveChangesAsync(cancellationToken);
                     skus = skus.Union(skusToAdd).ToList();
                 }
                 attempts = 0;
@@ -360,7 +364,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
         {
             try
             {
-                datas = await _context.DimTempo.Where(q => uniqueDates.Contains(q.Date)).ToListAsync();
+                var context = await _contextFactory.CreateDbContextAsync();
+                datas = await context.DimTempo.Where(q => uniqueDates.Contains(q.Date)).ToListAsync();
                 var dimTempoToAdd = nfs
                     .Select(nf => nf.Emissao.Date)
                     .Distinct()
@@ -370,8 +375,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                 if (dimTempoToAdd.Any())
                 {
-                    _context.DimTempo.AddRange(dimTempoToAdd);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    context.DimTempo.AddRange(dimTempoToAdd);
+                    await context.SaveChangesAsync(cancellationToken);
                     datas = datas.Union(dimTempoToAdd).ToList();
                 }
                 attempts = 0;
@@ -403,23 +408,29 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
         {
             try
             {
-                empresas = await _context.DimEmpresas.Where(q => uniqueCnpjs.Contains(q.Cnpj)).ToListAsync();
+                var context = await _contextFactory.CreateDbContextAsync();
+                empresas = await context.DimEmpresas.Where(q => uniqueCnpjs.Contains(q.Cnpj)).ToListAsync();
                 var empresasToAdd = nfs
-                    .SelectMany(nf => new List<EmpresaDocument>
+                    .SelectMany(nf =>
                     {
-                        nf.Empresa    ?? new EmpresaDocument(),
-                        nf.Emissor    ?? new EmpresaDocument(),
-                        nf.Exportador ?? new EmpresaDocument()
+                        var list = new List<EmpresaDocument>();
+                        if (!string.IsNullOrEmpty(nf.Empresa?.Cnpj))
+                            list.Add(nf.Empresa);
+                        if (!string.IsNullOrEmpty(nf.Emissor?.Cnpj))
+                            list.Add(nf.Emissor);
+                        if (!string.IsNullOrEmpty(nf.Exportador?.Cnpj))
+                            list.Add(nf.Exportador);
+                        return list;
                     })
                     .DistinctBy(q => q.Cnpj)
-                    .Where(empresa => empresa.Cnpj != null && empresas.Any(q => q.Cnpj == empresa.Cnpj) == false)
+                    .ExceptBy(empresas.Select(q => q.Cnpj), q => q.Cnpj)
                     .Select(empresa => ParseDimEmpresa(empresa))
                     .ToList();  // We need to materialize so EF can track id back...
 
                 if (empresasToAdd.Any())
                 {
-                    _context.DimEmpresas.AddRange(empresasToAdd);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    context.DimEmpresas.AddRange(empresasToAdd);
+                    await context.SaveChangesAsync(cancellationToken);
                     empresas = empresas.Union(empresasToAdd).ToList();
                 }
                 attempts = 0;
@@ -450,7 +461,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
         {
             try
             {
-                consultaTipoOperacoes = await _context.DimTipoOperacoes.ToListAsync(cancellationToken);
+                var context = await _contextFactory.CreateDbContextAsync();
+                consultaTipoOperacoes = await context.DimTipoOperacoes.ToListAsync(cancellationToken);
                 if (consultaTipoOperacoes.Count() == 0)
                 {
                     var novosTiposOperacoes = operacoes
@@ -466,8 +478,8 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
                         })
                         .ToList(); // We need to materialize so EF can track id back...
 
-                    _context.DimTipoOperacoes.AddRange(novosTiposOperacoes);
-                    await _context.SaveChangesAsync(cancellationToken);
+                    context.DimTipoOperacoes.AddRange(novosTiposOperacoes);
+                    await context.SaveChangesAsync(cancellationToken);
                     consultaTipoOperacoes.AddRange(novosTiposOperacoes);
                 }
                 attempt = 0;
@@ -521,7 +533,7 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
             _logger.LogTrace($"Fetching blob batch {BUFFER_SIZE}");
             
-            var buffer = chunk.Select(x => _container.GetBlobClient(x.BloblAddress).DownloadContentAsync()).ToList();
+            var buffer = chunk.Select(x => _container.GetBlobClient(x.BlobAddress).DownloadContentAsync()).ToList();
             await Task.WhenAll(buffer);
 
             for (var index = 0; index < buffer.Count(); index++)
@@ -533,7 +545,7 @@ public class NfDwConsolidadorService : IMessageBusBatchEventHandler<NfConsolidac
 
                 if (nfDocument == null) throw new InvalidOperationException($"Não foi possível desserializar a NF {chunk[index].ChaveNf}");
 
-                yield return (nfDocument!, chunk[index].BloblAddress);
+                yield return (nfDocument!, chunk[index].BlobAddress);
             }
         }
     }
