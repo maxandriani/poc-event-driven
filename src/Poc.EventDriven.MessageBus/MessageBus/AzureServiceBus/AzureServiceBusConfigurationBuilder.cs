@@ -8,15 +8,13 @@ sealed internal class AzureServiceBusConfigurationBuilder :
     IAzureServiceBusSettings,
     IAzureServiceBusConfigurationBuilder
 {
-    public string ConnectionString { get; private set; } = string.Empty;
+    public string ClientName { get; private set; } = string.Empty;
 
     public string QueueName { get; private set; } = string.Empty;
 
     public string TopicName { get; private set; } = string.Empty;
 
     public string SubscriptionName { get; private set; } = string.Empty;
-
-    public ServiceBusClientOptions? ClientOptions { get; private set; }
 
     public ServiceBusProcessorOptions? ProcessorOptions { get; private set; }
 
@@ -36,19 +34,9 @@ sealed internal class AzureServiceBusConfigurationBuilder :
         sessionKeys = SessionKeys;
     }
     
-    public IAzureServiceBusConfigurationBuilder WithClientOptions(Action<ServiceBusClientOptions> clientOptionsAction)
+    public IAzureServiceBusConfigurationBuilder WithClientName(string clientName)
     {
-        if (ClientOptions == null)
-            ClientOptions = new ServiceBusClientOptions();
-
-        clientOptionsAction(ClientOptions);
-        
-        return this;
-    }
-
-    public IAzureServiceBusConfigurationBuilder WithConnectionString(string connectionString)
-    {
-        ConnectionString = connectionString;
+        ClientName = clientName;
         return this;
     }
 

@@ -40,11 +40,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.MessageBus", "src\Poc.EventDriven.MessageBus\Poc.EventDriven.MessageBus.csproj", "{1FBBC05D-1B89-415F-98F8-5F5342EB56BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.CalculadoraSaldoWorker", "src\Poc.EventDriven.App.CalculadoraSaldoWorker\Poc.EventDriven.App.CalculadoraSaldoWorker.csproj", "{F47F8D02-D852-4EFB-B7EB-7B42AE181B1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.CalculadoraSaldoWorker", "src\Poc.EventDriven.App.CalculadoraSaldoWorker\Poc.EventDriven.App.CalculadoraSaldoWorker.csproj", "{F47F8D02-D852-4EFB-B7EB-7B42AE181B1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.DwNfConsolidacaoWorker", "src\Poc.EventDriven.App.DwNfConsolidacaoWorker\Poc.EventDriven.App.DwNfConsolidacaoWorker.csproj", "{1D4493C7-582F-48A8-8B7D-11C951444FE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.DwNfConsolidacaoWorker", "src\Poc.EventDriven.App.DwNfConsolidacaoWorker\Poc.EventDriven.App.DwNfConsolidacaoWorker.csproj", "{1D4493C7-582F-48A8-8B7D-11C951444FE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.App.NfMonitorWorker", "src\Poc.EventDriven.App.NfMonitorWorker\Poc.EventDriven.App.NfMonitorWorker.csproj", "{E9F4DF73-4585-47FF-A457-D917D6DA49D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Poc.EventDriven.App.NfMonitorWorker", "src\Poc.EventDriven.App.NfMonitorWorker\Poc.EventDriven.App.NfMonitorWorker.csproj", "{E9F4DF73-4585-47FF-A457-D917D6DA49D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Poc.EventDriven.HealthChecks", "src\Poc.EventDriven.HealthChecks\Poc.EventDriven.HealthChecks.csproj", "{E3754B20-582E-4C56-A783-611CEDE2C54B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,6 +106,10 @@ Global
 		{E9F4DF73-4585-47FF-A457-D917D6DA49D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9F4DF73-4585-47FF-A457-D917D6DA49D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9F4DF73-4585-47FF-A457-D917D6DA49D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3754B20-582E-4C56-A783-611CEDE2C54B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3754B20-582E-4C56-A783-611CEDE2C54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3754B20-582E-4C56-A783-611CEDE2C54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3754B20-582E-4C56-A783-611CEDE2C54B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -122,6 +128,7 @@ Global
 		{F47F8D02-D852-4EFB-B7EB-7B42AE181B1E} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{1D4493C7-582F-48A8-8B7D-11C951444FE4} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 		{E9F4DF73-4585-47FF-A457-D917D6DA49D0} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
+		{E3754B20-582E-4C56-A783-611CEDE2C54B} = {AAF1C2DB-AD87-4F25-8BBD-5E7E137E3C3F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F3C0F8A8-7C09-49CD-BFA2-E6C3630CAC38}

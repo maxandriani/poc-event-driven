@@ -1,9 +1,11 @@
 ﻿using Azure.Messaging.ServiceBus;
 
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Poc.EventDriven.HealthChecks.Abstractions;
 using Poc.EventDriven.MessageBus.Abstractions;
 using Poc.EventDriven.MessageBus.AzureServiceBus.Abstractions;
 
@@ -16,28 +18,25 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
 {
     private readonly ILogger<AzureServiceBusBatchHostedService<TEvent>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ServiceBusClient _client;
-    private readonly ServiceBusReceiver _receiver;
+    private readonly IWatchDogFactory _watchDogFactory;
+    private readonly IAzureClientFactory<ServiceBusClient> _serviceBusClientFactory;
+    private readonly IOptions<IAzureServiceBusSettings> _options;
+    private IWatchDog? _watchDog = null;
     private bool _hasStarted = false;
     private CancellationTokenSource? _stoppingTokenSource;
 
     public AzureServiceBusBatchHostedService(
         ILogger<AzureServiceBusBatchHostedService<TEvent>> logger,
         IServiceProvider serviceProvider,
-        IOptions<IAzureServiceBusSettings> _options)
+        IWatchDogFactory wathcDogFactory,
+        IAzureClientFactory<ServiceBusClient> serviceBusClientFactory,
+        IOptions<IAzureServiceBusSettings> options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
-
-        _client = new ServiceBusClient(_options.Value.ConnectionString, _options.Value.ClientOptions);
-        var (queue, topic, subscription, _) = _options.Value;
-
-        _receiver = (!string.IsNullOrWhiteSpace(queue), !string.IsNullOrWhiteSpace(topic), !string.IsNullOrWhiteSpace(subscription)) switch
-        {
-            (true, false, false) => _client.CreateReceiver(queue, _options.Value.ReceiverOptions),
-            (false, true, true) => _client.CreateReceiver(topic, subscription, _options.Value.ReceiverOptions),
-            (_, _, _) => throw new ArgumentException("Você precisa informar uma Queue ou um conjunto de Topic/Subscription, mas não ambos.")
-        };
+        _watchDogFactory = wathcDogFactory;
+        _serviceBusClientFactory = serviceBusClientFactory;
+        _options = options;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -45,6 +44,7 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
         if (_hasStarted) return Task.CompletedTask;
         _hasStarted = true;
         _stoppingTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _watchDog = _watchDogFactory.CreateTimeoutWatchDog(TimeSpan.FromMinutes(15), $"O processamento do evento {nameof(TEvent)} não está respondendo.");
         Task.Run(() => ExecuteAsync(cancellationToken));
         return Task.CompletedTask;
     }
@@ -53,32 +53,45 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
     {
         if (_hasStarted)
             _stoppingTokenSource?.Cancel();
-        
+
+        _watchDog?.Dispose();
         return Task.CompletedTask;
     }
 
     private async Task ExecuteAsync(CancellationToken cancellationToken)
     {
+        var client = _serviceBusClientFactory.CreateClient(_options.Value.ClientName);
+        var (queue, topic, subscription, _) = _options.Value;
+
+        await using var receiver = (!string.IsNullOrWhiteSpace(queue), !string.IsNullOrWhiteSpace(topic), !string.IsNullOrWhiteSpace(subscription)) switch
+        {
+            (true, false, false) => client.CreateReceiver(queue, _options.Value.ReceiverOptions),
+            (false, true, true) => client.CreateReceiver(topic, subscription, _options.Value.ReceiverOptions),
+            (_, _, _) => throw new ArgumentException("Você precisa informar uma Queue ou um conjunto de Topic/Subscription, mas não ambos.")
+        };
+
         while (cancellationToken.IsCancellationRequested == false)
         {
+            _watchDog?.Feed(); // apply health check
             List<MessageWithBag<TEvent>> payload = new();
-            
+
+            // Se isso não funcionar... deve escalar pra thread principal.
+            var receivedMessages = await receiver.ReceiveMessagesAsync(
+                   maxMessages: 128,
+                   maxWaitTime: TimeSpan.FromMinutes(5),
+                   cancellationToken);
+
+            if (receivedMessages == null) continue;
+
             try
             {
-                var receivedMessages = await _receiver.ReceiveMessagesAsync(
-                    maxMessages: 128,
-                    maxWaitTime: TimeSpan.FromMinutes(5),
-                    cancellationToken);
-
-                if (receivedMessages == null) continue;
-
                 payload = receivedMessages
                 .Select(x => new MessageWithBag<TEvent>(
                     x.Body.ToObjectFromJson<TEvent>(new JsonSerializerOptions
                     {
                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
                     }),
-                    new AzureServiceBusBatchMessageBag<TEvent>(x, _receiver)))
+                    new AzureServiceBusBatchMessageBag<TEvent>(x, receiver)))
                 .ToList();
                 _logger.LogInformation($"New chunk of {receivedMessages.Count} messages received.");
 
@@ -117,8 +130,6 @@ sealed internal class AzureServiceBusBatchHostedService<TEvent> : IMessageBusMan
     public async ValueTask DisposeAsync()
     {
         _stoppingTokenSource?.Cancel();
-        await _receiver.DisposeAsync();
-        await _client.DisposeAsync();
     }
 
     public void Dispose() => DisposeAsync().GetAwaiter();

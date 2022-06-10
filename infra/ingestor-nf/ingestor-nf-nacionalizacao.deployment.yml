@@ -2,8 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ing-nf-nac-dep
+  namespace: poc-event-driven-ns
 spec:
   replicas: 2
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: ingestor-nf-nacionalizacao-worker
@@ -14,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ingestor-nf-nacionalizacao-worker
-        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.8
+        image: maxandriani/poc.eventdriven.app.dwnfconsolidacaoworker:1.0.10
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -22,10 +24,24 @@ spec:
         resources:
           limits:
             memory: "256Mi"
-            cpu: "500m"
+            cpu: "200m"
           requests:
             memory: "128Mi"
             cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: ing-nf-na-p
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: ing-nf-na-p
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 30
         ports:
         - containerPort: 80
           name: ing-nf-na-p

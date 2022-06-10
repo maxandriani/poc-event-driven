@@ -71,7 +71,7 @@ public class NfIngressService : Protos.NfIngress.V1.NfIngressService.NfIngressSe
 
                 await _messageBusDispatcher.DispatchAsync(new NfConsolidacaoEvent
                 {
-                    BloblAddress = $"{nf.Chave}.json",
+                    BlobAddress = $"{nf.Chave}.json",
                     ChaveNf = nf.Chave.ToString(),
                     Cliente = cliente
                 }, new Dictionary<string, object>()

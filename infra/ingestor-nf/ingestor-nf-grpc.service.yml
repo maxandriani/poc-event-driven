@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ing-nf-grpc-svc
+  namespace: poc-event-driven-ns
 spec:
   type: LoadBalancer
   selector:

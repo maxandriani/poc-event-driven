@@ -74,7 +74,17 @@ internal static class NfsCmdHandler
 
         AppContext.SetSwitch(
             "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-        var channel = GrpcChannel.ForAddress(grpcUri);
+        var handler = new SocketsHttpHandler
+        {
+            //PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+            KeepAlivePingDelay = TimeSpan.FromSeconds(120),
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+            EnableMultipleHttp2Connections = true
+        };
+        var channel = GrpcChannel.ForAddress(grpcUri, new GrpcChannelOptions
+        {
+            HttpHandler = handler
+        });
         var nfClient = new NfIngressService.NfIngressServiceClient(channel);
         var sender = nfClient.AddMany();
 

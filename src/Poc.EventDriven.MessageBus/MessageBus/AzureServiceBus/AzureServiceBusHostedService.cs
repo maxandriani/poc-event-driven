@@ -6,6 +6,8 @@ using Poc.EventDriven.MessageBus.AzureServiceBus.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Azure;
+using Poc.EventDriven.HealthChecks.Abstractions;
 
 namespace Poc.EventDriven.MessageBus.AzureServiceBus;
 
@@ -14,40 +16,31 @@ sealed internal class AzureServiceBusHostedService<TEvent> : IMessageBusManager
 {
     private readonly ILogger<AzureServiceBusHostedService<TEvent>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ServiceBusClient _client;
-    private readonly ServiceBusProcessor _processor;
+    private readonly IWatchDogFactory _watchDogFactory;
+    private readonly IAzureClientFactory<ServiceBusClient> _azureServiceBusClientFactory;
+    private readonly IOptions<IAzureServiceBusSettings> _options;
+    private IWatchDog? _watchDog = null;
+    private ServiceBusProcessor? _processor;
     private bool _hasStarted = false;
     private CancellationTokenSource? _stoppingTokenSource;
 
     public AzureServiceBusHostedService(
         ILogger<AzureServiceBusHostedService<TEvent>> logger,
         IServiceProvider serviceProvider,
-        IOptions<IAzureServiceBusSettings> _options)
+        IWatchDogFactory watchDogFactory,
+        IAzureClientFactory<ServiceBusClient> azureServiceBusClientFactory,
+        IOptions<IAzureServiceBusSettings> options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
-
-        _client = new ServiceBusClient(_options.Value.ConnectionString, _options.Value.ClientOptions);
-        var (queue, topic, subscription, _) = _options.Value;
-
-        _processor = (!string.IsNullOrWhiteSpace(queue), !string.IsNullOrWhiteSpace(topic), !string.IsNullOrWhiteSpace(subscription)) switch
-        {
-            (true, false, false) => _client.CreateProcessor(queue, _options.Value.ProcessorOptions),
-            (false, true, true)  => _client.CreateProcessor(topic, subscription, _options.Value.ProcessorOptions),
-            (_, _, _)            => throw new ArgumentException("Você precisa informar uma Queue ou um conjunto de Topic/Subscription, mas não ambos.")
-        };
-
-        ConfigureHandlers();
-    }
-
-    private void ConfigureHandlers()
-    {
-        _processor.ProcessMessageAsync += MessageHandler;
-        _processor.ProcessErrorAsync += ErrorHandler;
+        _watchDogFactory = watchDogFactory;
+        _azureServiceBusClientFactory = azureServiceBusClientFactory;
+        _options = options;
     }
 
     private async Task MessageHandler(ProcessMessageEventArgs args)
     {
+        _watchDog?.Feed();
         var bag = new AzureServiceBusMessageBag<TEvent>(args);
 
         try
@@ -82,16 +75,17 @@ sealed internal class AzureServiceBusHostedService<TEvent> : IMessageBusManager
 
     private Task ErrorHandler(ProcessErrorEventArgs args)
     {
+        _watchDog?.Feed();
         _logger.LogError($"{args.Exception.Message}", args.ErrorSource);
         return Task.CompletedTask;
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_hasStarted) await _processor.StopProcessingAsync();
+        if (_hasStarted && _processor != null) await _processor.StopProcessingAsync();
         _stoppingTokenSource?.Cancel();
-        await _client.DisposeAsync();
-        await _processor.DisposeAsync();
+        if (_processor != null)
+            await _processor.DisposeAsync();
     }
 
     public void Dispose() => DisposeAsync().GetAwaiter();
@@ -99,12 +93,27 @@ sealed internal class AzureServiceBusHostedService<TEvent> : IMessageBusManager
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting event.");
+        _watchDog = _watchDogFactory.CreatePredicateWatchDog(() => _processor?.IsProcessing == true, TimeSpan.FromMinutes(10), $"O processamento do evento {nameof(TEvent)} não está respondendo.");
 
         if (_hasStarted) return; // Só podemos rodar uma vez...
 
         // Cria um novo factory filho do token original.
         _stoppingTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        _hasStarted = true; 
+        _hasStarted = true;
+
+        var client = _azureServiceBusClientFactory.CreateClient(_options.Value.ClientName);
+        var (queue, topic, subscription, _) = _options.Value;
+
+        _processor = (!string.IsNullOrWhiteSpace(queue), !string.IsNullOrWhiteSpace(topic), !string.IsNullOrWhiteSpace(subscription)) switch
+        {
+            (true, false, false) => client.CreateProcessor(queue, _options.Value.ProcessorOptions),
+            (false, true, true) => client.CreateProcessor(topic, subscription, _options.Value.ProcessorOptions),
+            (_, _, _) => throw new ArgumentException("Você precisa informar uma Queue ou um conjunto de Topic/Subscription, mas não ambos.")
+        };
+
+        _processor.ProcessMessageAsync += MessageHandler;
+        _processor.ProcessErrorAsync += ErrorHandler;
+
         await _processor.StartProcessingAsync(_stoppingTokenSource.Token);
     }
 
@@ -112,8 +121,11 @@ sealed internal class AzureServiceBusHostedService<TEvent> : IMessageBusManager
     {
         if (_hasStarted)
         {
-            await _processor.StopProcessingAsync();
+            if (_processor != null)
+                await _processor.StopProcessingAsync();
             _hasStarted = false;
         }
+
+        _watchDog?.Dispose();
     }
 }

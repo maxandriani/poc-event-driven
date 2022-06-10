@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: regime-api-config
+  namespace: poc-event-driven-ns
+data:
+  ConnectionStrings__Regimes: User ID=postgres;Password=postgres;Host=raspikube0;Port=5432;Database=regimes;Pooling=true;Connection Lifetime=0;

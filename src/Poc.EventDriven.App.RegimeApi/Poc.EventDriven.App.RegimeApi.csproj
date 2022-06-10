@@ -7,6 +7,7 @@
     <RootNamespace>Poc.EventDriven</RootNamespace>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+    <UserSecretsId>49b9cdc8-a838-42d9-8027-aa8ba55a066c</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

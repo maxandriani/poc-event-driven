@@ -1,0 +1,36 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: az-sb-metrics-auth
+  namespace: poc-event-driven-ns
+spec:
+  secretTargetRef:                        # Optional.
+  - parameter: connection                 # Required - Defined by the scale trigger
+    name: az-sb-metrics-auth-cs           # Required.
+    key: CONNECTIONSTRINGS__AZURE_METRICS # Required.
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: ing-ng-nac-scale
+  namespace: poc-event-driven-ns
+spec:
+  scaleTargetRef:
+    name: ing-nf-nac-dep
+  idleReplicaCount: 0
+  minReplicaCount: 1
+  maxReplicaCount: 15
+  triggers:
+  - type: azure-servicebus
+    metadata:
+      # or
+      topicName: nf_ingress_tp
+      subscriptionName: nacionalizacao_worker_sub
+      # Required: Define what Azure Service Bus to authenticate to with Managed Identity
+      namespace: poc-ingestao-sb0
+      # Optional
+      messageCount: "512" # default 5
+      #cloud: AzureGermanCloud # Optional. Default: AzurePublicCloud
+    authenticationRef:
+      name: az-sb-metrics-auth # authenticationRef would need either podIdentity or define a connection parameter
+

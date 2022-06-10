@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: regime-api-dep
+  namespace: poc-event-driven-ns
 spec:
   replicas: 1
   selector:
@@ -15,6 +16,9 @@ spec:
       containers:
       - name: regime-api-dep
         image: maxandriani/poc.eventdriven.app.regimeapi:1.0.0
+        envFrom:
+          - configMapRef:
+              name: regime-api-config
         resources:
           limits:
             memory: "512Mi"

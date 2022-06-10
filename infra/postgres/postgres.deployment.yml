@@ -22,7 +22,7 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 5432
-          name: postgres-db-port
+          name: pg-db-port
         envFrom:
           - configMapRef:
               name: postgres-config

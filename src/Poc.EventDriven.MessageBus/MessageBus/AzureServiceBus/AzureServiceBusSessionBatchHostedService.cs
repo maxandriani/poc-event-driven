@@ -1,18 +1,15 @@
 ﻿using Azure.Messaging.ServiceBus;
 
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Poc.EventDriven.HealthChecks.Abstractions;
 using Poc.EventDriven.MessageBus.Abstractions;
 using Poc.EventDriven.MessageBus.AzureServiceBus.Abstractions;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Poc.EventDriven.MessageBus.AzureServiceBus;
 
@@ -21,7 +18,9 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
 {
     private readonly ILogger<AzureServiceBusSessionBatchHostedService<TEvent>> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ServiceBusClient _client;
+    private readonly IAzureClientFactory<ServiceBusClient> _azureClientFactory;
+    private readonly IWatchDogFactory _watchDogFactory;
+    private IWatchDog? _watchDog = null;
     private ServiceBusReceiver? _receiver { get; set; }
     private bool _hasStarted = false;
     private CancellationTokenSource? _stoppingTokenSource;
@@ -31,12 +30,15 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
     public AzureServiceBusSessionBatchHostedService(
         ILogger<AzureServiceBusSessionBatchHostedService<TEvent>> logger,
         IServiceProvider serviceProvider,
+        IAzureClientFactory<ServiceBusClient> azureClientFactory,
+        IWatchDogFactory watchDog,
         IOptions<IAzureServiceBusSettings> options)
     {
         _logger = logger;
         _serviceProvider = serviceProvider;
         _options = options;
-        _client = new ServiceBusClient(_options.Value.ConnectionString, _options.Value.ClientOptions);
+        _watchDogFactory = watchDog;
+        _azureClientFactory = azureClientFactory;
     }
 
     public bool HasSessionKeyControl() => _options.Value.SessionKeys?.Length > 0;
@@ -53,16 +55,18 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
 
     public Task<ServiceBusSessionReceiver> GetNextReceiver()
     {
+        var client = _azureClientFactory.CreateClient(_options.Value.ClientName);
+
         return (
             !string.IsNullOrWhiteSpace(_options.Value.QueueName),
             !string.IsNullOrWhiteSpace(_options.Value.TopicName),
             !string.IsNullOrWhiteSpace(_options.Value.SubscriptionName),
             HasSessionKeyControl()) switch
         {
-            (true, false, false, true)  => _client.AcceptSessionAsync(_options.Value.QueueName, GetNextSessionKey(), _options.Value.SessionReceiverOptions),
-            (true, false, false, false) => _client.AcceptNextSessionAsync(_options.Value.QueueName, _options.Value.SessionReceiverOptions),
-            (false, true, true, true)   => _client.AcceptSessionAsync(_options.Value.TopicName, _options.Value.SubscriptionName, GetNextSessionKey(), _options.Value.SessionReceiverOptions),
-            (false, true, true, false)  => _client.AcceptNextSessionAsync(_options.Value.TopicName, _options.Value.SubscriptionName, _options.Value.SessionReceiverOptions),
+            (true, false, false, true)  => client.AcceptSessionAsync(_options.Value.QueueName, GetNextSessionKey(), _options.Value.SessionReceiverOptions),
+            (true, false, false, false) => client.AcceptNextSessionAsync(_options.Value.QueueName, _options.Value.SessionReceiverOptions),
+            (false, true, true, true)   => client.AcceptSessionAsync(_options.Value.TopicName, _options.Value.SubscriptionName, GetNextSessionKey(), _options.Value.SessionReceiverOptions),
+            (false, true, true, false)  => client.AcceptNextSessionAsync(_options.Value.TopicName, _options.Value.SubscriptionName, _options.Value.SessionReceiverOptions),
             (_, _, _, _) => throw new ArgumentException("Você precisa informar uma Queue ou um conjunto de Topic/Subscription, mas não ambos.")
         };
     }
@@ -72,6 +76,7 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
         if (_hasStarted) return Task.CompletedTask;
         _hasStarted = true;
         _stoppingTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _watchDog = _watchDogFactory.CreateTimeoutWatchDog(TimeSpan.FromMinutes(15), $"O processamento do evento {nameof(TEvent)} não está respondendo.");
         Task.Run(() => ExecuteAsync(cancellationToken));
         return Task.CompletedTask;
     }
@@ -80,6 +85,8 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
     {
         if (_hasStarted)
             _stoppingTokenSource?.Cancel();
+
+        _watchDog?.Dispose();
 
         return Task.CompletedTask;
     }
@@ -97,8 +104,10 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
             {
                 try
                 {
+                    _watchDog?.Feed();
+
                     var receivedMessages = await _receiver.ReceiveMessagesAsync(
-                        maxMessages: 1024,
+                        maxMessages: 128,
                         maxWaitTime: TimeSpan.FromMinutes(5),
                         cancellationToken);
 
@@ -160,7 +169,6 @@ sealed internal class AzureServiceBusSessionBatchHostedService<TEvent> : IMessag
                 await _receiver.CloseAsync();
             await _receiver.DisposeAsync();
         }
-        await _client.DisposeAsync();
     }
 
     public void Dispose() => DisposeAsync().GetAwaiter();

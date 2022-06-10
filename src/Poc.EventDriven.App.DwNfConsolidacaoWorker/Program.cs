@@ -6,39 +6,44 @@ using Poc.EventDriven.Data.Abstractions;
 using Poc.EventDriven.DwNf;
 using Poc.EventDriven.DwNf.Abstractions;
 using Poc.EventDriven.DwNf.Events;
+using Poc.EventDriven.HealthChecks;
 
-var builder = Host.CreateDefaultBuilder(args);
-    // .ConfigureAppConfiguration(config =>
-    // {
-        // config.AddUserSecrets("b4e61047-7462-44ab-bc8f-68edb0e30909");
-    // });
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.ConfigureServices((context, services) =>
+builder.Services.AddAzureClients(config =>
 {
-    services.AddAzureClients(config =>
+    config.AddBlobServiceClient(builder.Configuration.GetConnectionString("NotasFiscaisStorage"))
+        .WithName(NfStorageConsts.NfStorageName);
+
+    config.AddServiceBusClient(builder.Configuration.GetConnectionString("ConsolidacaoServiceBusSubscription"))
+        .WithName("ConsolidacaoServiceBusSubscription");
+});
+
+builder.Services.AddAppDbContextFactory<IDwNfDbContext, DwNfDbContext>(options =>
+    options
+        .UseNpgsql(builder.Configuration.GetConnectionString("DwNfDatabase"))
+        .EnableDetailedErrors());
+    
+builder.Services.AddAzureServiceBusBatchWorker<NfConsolidacaoEvent, NfDwConsolidadorService>()
+    .WithClientName("ConsolidacaoServiceBusSubscription")
+    .WithTopicSubscription(
+        builder.Configuration.GetValue<string>("ServiceBus:ConsolidacaoServiceBusSubscription:TopicName"),
+        builder.Configuration.GetValue<string>("ServiceBus:ConsolidacaoServiceBusSubscription:SubscriptionName"))
+    .WithSessionReceiverOptions(options =>
     {
-        config.AddBlobServiceClient(context.Configuration.GetConnectionString("NotasFiscaisStorage"))
-            .WithName(NfStorageConsts.NfStorageName);
+        builder.Configuration.GetSection("ServiceBus:ConsolidacaoServiceBusSubscription:ServiceBusReceiverOptions").Bind(options);
     });
 
-    services.AddAppDbContextFactory<IDwNfDbContext, DwNfDbContext>(options =>
-        options
-            .UseNpgsql(context.Configuration.GetConnectionString("DwNfDatabase"))
-            .EnableDetailedErrors());
-    
-    services.AddAzureServiceBusBatchWorker<NfConsolidacaoEvent, NfDwConsolidadorService>()
-        .WithConnectionString(context.Configuration.GetConnectionString("ConsolidacaoServiceBusSubscription"))
-        .WithTopicSubscription(
-            context.Configuration.GetValue<string>("ServiceBus:ConsolidacaoServiceBusSubscription:TopicName"),
-            context.Configuration.GetValue<string>("ServiceBus:ConsolidacaoServiceBusSubscription:SubscriptionName"))
-        .WithSessionReceiverOptions(options =>
-        {
-            context.Configuration.GetSection("ServiceBus:ConsolidacaoServiceBusSubscription:ServiceBusReceiverOptions").Bind(options);
-        });
-});
+builder.Services.AddWatchDogServices();
+
+builder.Services.AddHealthChecks()
+    .AddAzureBlobStorage(builder.Configuration.GetConnectionString("NotasFiscaisStorage"), NfStorageConsts.NfContainerName)
+    .AddNpgSql(builder.Configuration.GetConnectionString("DwNfDatabase"))
+    .AddWatchDogCheck();
 
 var app = builder.Build();
 
+app.MapHealthChecks("/healthz");
 
 await app.RunAsync();
